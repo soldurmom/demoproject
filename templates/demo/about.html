@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1> О нас</h1>
+
+<div id="carouselExampleCaptions" class="carousel slide" data-ride="carousel">
+  <div class="carousel-inner">
+    {% for item in products %}
+        <div class="carousel-item {% if forloop.counter == 1 %} active {%endif %}">
+          <img src="{{ item.photo.url }}" class="d-block w-100" alt="...">
+          <div class="carousel-caption d-none d-md-block">
+            <h5>{{ item.name }}</h5>
+          </div>
+        </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

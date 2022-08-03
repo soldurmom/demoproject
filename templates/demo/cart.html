@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Корзина</h1>
+    {% if cart_items %}
+        <ul>
+            {% for item in cart_items %}
+                <li>
+                    {{ item.product.name }} - <span> {{ item.count }}</span>
+                    <a href="#" onclick="toCart(this,{{ item.product.pk }})">Добавить</a>
+                    <a href="#" onclick="remCart(this,{{ item.product.pk }})">Убрать</a>
+                </li>
+            {% endfor %}
+        </ul>
+    <div>
+        <input type="password" value="" name="password" placeholder="Введите ваш пароль">
+    <button id="by_order">Сформировать заказ</button>
+    </div>
+    {% else %}
+        <p> Корзина пуста</p>
+    {% endif %}
+
+<script>
+    document.querySelector('#by_order').addEventListener('click', async (event) => {
+        const password = document.querySelector('input').value;
+        const res = await fetch(`/checkout?password=${password}`).then(res=>res.json());
+        if(res.error){
+            const message = document.createElement('div');
+            message.innerHTML = res.error;
+            event.target.parentElement.prepend(message);
+            setTimeout(()=>message.remove(),1000);
+        } else {
+            location.href = '/orders';
+        }
+    })
+
+    remCart = async (target, pk) => {
+        const res = await fetch(`/rem_cart/${pk}`).then(res=>res.json());
+        if( res.count > 0 )
+        {
+            const span = target.parentElement.querySelector('span');
+            span.innerHTML = res.count;
+        } else {
+            target.parentElement.remove()
+        }
+    }
+
+    toCart = async(target, pk) => {
+        const res = await fetch(`to_cart/${pk}`).then(res=>res.json());
+
+        const message = document.createElement('div');
+        if( res.count ) {
+            const span = target.parentElement.querySelector('span');
+            span.innerHTML = res.count;
+        } else {
+            message.innerHTML = 'Больше нельзя добавить';
+        }
+        target.parentElement.append(message);
+        setTimeout(() => message.remove(), 1000);
+    }
+
+</script>
+{% endblock %}

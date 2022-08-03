@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Регистрация</h1>
+    <form method="post">
+        {% csrf_token %}
+        <table>
+        {{ form }}
+        </table>
+        <button type="submit" class="btn btn-primary">Регистрация</button>
+    </form>
+
+<script>
+    all_inputs = document.querySelectorAll('input')
+
+    let pass1,pass2;
+    for( const el of all_inputs )
+    {
+        if( !el.id.includes('id_')  )
+            continue;
+
+        if( el.id == 'id_password' )
+            pass1 = el;
+        else if( el.id == "id_password2")
+            pass2 = el;
+
+        el.addEventListener('blur', async(event) =>
+        {
+            event.target.parentElement.querySelector('.errorList')?.remove();
+            const errors = document.createElement('ul');
+            errors.classList.add('errorList');
+            errors.innerHTML = '';
+
+            if(event.target.value.length == 0){
+                errors.innerHTML = '<li>Поле не может быть пустым</li>';
+            }
+            else
+            {
+                if( el.name == 'username' || el.name == 'email' )
+                {
+                    if(el.name == 'username')
+                    {
+                        const re = new RegExp("^[a-zA-Z0-9-]+$");
+                        if(!re.test(event.target.value)) {
+                            errors.innerHTML = '<li>Разрешены только латиница, цифра или тире</li>';
+                        }
+                    }
+                    else
+                    {
+                        const re = new RegExp("^[a-z0-9]+@[a-z]+\.[a-z]{2,5}$");
+                        if(!re.test(event.target.value)) {
+                            errors.innerHTML = '<li>Неверный email</li>';
+                        }
+                    }
+
+                        const res = await fetch(`/validate?name=${el.name}&value=${event.target.value}`).then(res=>res.json());
+                        if(res.is_taken){
+                            errors.innerHTML = '<li>Пользователь с такими данными уже есть</li>';
+                        }
+
+                }
+                else if( el.name == 'password' || el.name == 'password2' )
+                {
+                    if(pass1.value != pass2.value)
+                    {
+                         errors.innerHTML = '<li>Пароли не совпадают</li>';
+                    }
+                }
+                else if( el.name == 'name' || el.name == 'surname' || el.name == 'patronomic')
+                {
+                    const re = new RegExp("^[а-яА-Я- ]+$");
+                    if(!re.test(event.target.value)) {
+                        errors.innerHTML = '<li>Только кирилица, пробел или тире</li>';
+                    }
+                }
+            }
+
+            event.target.parentElement.append(errors);
+        })
+    }
+</script>
+
+{% endblock %}
